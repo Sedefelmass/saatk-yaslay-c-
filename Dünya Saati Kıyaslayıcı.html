@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Dünya Saati Kıyaslayıcı</title>
+<style>
+:root{--bg:#f6f5f1;--card:#fff;--tx:#1d1d1b;--mut:#6b6b66;--bd:#e2e0d8;--ac:#2f6fed;--work:#4caf7d;--off:#e9e7df;--all:#f5b63d;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#15161a;--card:#1f2127;--tx:#ececea;--mut:#9a9aa0;--bd:#33363e;--ac:#6c9bff;--work:#3f9b6c;--off:#2a2d35;--all:#e0a52e}}
+:root[data-theme="dark"]{--bg:#15161a;--card:#1f2127;--tx:#ececea;--mut:#9a9aa0;--bd:#33363e;--ac:#6c9bff;--work:#3f9b6c;--off:#2a2d35;--all:#e0a52e}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font-family:system-ui,-apple-system,"Segoe UI",sans-serif;line-height:1.45}
+main{max-width:980px;margin:0 auto;padding:20px 16px 40px}
+h1{font-size:1.6rem;margin:0 0 4px}
+h2{font-size:1.05rem;margin:28px 0 10px}
+.sub{color:var(--mut);margin:0 0 16px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:1px solid var(--bd);background:var(--card);color:var(--tx);border-radius:99px;padding:6px 12px;cursor:pointer;font-size:.9rem}
+.chip.on{background:var(--ac);color:#fff;border-color:var(--ac)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:14px}
+.card.base{border-color:var(--ac);box-shadow:0 0 0 1px var(--ac)}
+.city{font-weight:600}
+.time{font-size:2rem;font-variant-numeric:tabular-nums;font-weight:600;margin:4px 0}
+.meta{color:var(--mut);font-size:.85rem}
+.tag{display:inline-block;font-size:.75rem;padding:2px 8px;border-radius:99px;background:var(--off);margin-top:6px}
+.wrap{overflow-x:auto;background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:12px}
+table{border-collapse:separate;border-spacing:2px;min-width:760px;width:100%}
+td.n{white-space:nowrap;font-size:.85rem;padding-right:8px;width:1%}
+td.c{height:24px;background:var(--off);border-radius:4px;text-align:center;font-size:.65rem;color:var(--mut)}
+td.c.w{background:var(--work);color:#fff}
+td.c.a{background:var(--all);color:#000;font-weight:700}
+th{font-size:.65rem;color:var(--mut);font-weight:400}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:.8rem;color:var(--mut);margin-top:8px}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:5px;vertical-align:-2px}
+.ai{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+select,button.go{font:inherit;padding:8px 12px;border-radius:10px;border:1px solid var(--bd);background:var(--card);color:var(--tx)}
+button.go{background:var(--ac);color:#fff;border-color:var(--ac);cursor:pointer}
+button.go:disabled{opacity:.6}
+#out{white-space:pre-wrap;background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:14px;margin-top:12px;min-height:56px}
+.dt{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;margin-bottom:12px}.dt label{display:flex;flex-direction:column;font-size:.8rem;color:var(--mut);gap:4px}.dt input{font:inherit;padding:7px 10px;border-radius:10px;border:1px solid var(--bd);background:var(--card);color:var(--tx)}.dt button.go{padding:8px 12px}
+.cmp{display:grid;grid-template-columns:1fr 1fr;gap:10px}.cmp .card{min-width:0}.sidea{border-color:var(--ac);box-shadow:0 0 0 1px var(--ac)}.sideb{border-color:var(--all);box-shadow:0 0 0 1px var(--all)}.big{font-size:clamp(1.6rem,7vw,2.6rem);font-weight:600;font-variant-numeric:tabular-nums;margin:4px 0}.k{color:var(--mut);font-size:.72rem;margin-top:8px}.v{font-size:.92rem}#cmptxt ul{margin:0;padding-left:18px}#cmptxt li{margin:6px 0}
+.sum{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:12px;margin-top:12px;font-size:.95rem}
+</style>
+</head>
+<body>
+<main>
+<h1>🌍 Dünya Saati Kıyaslayıcı</h1>
+<p class="sub">Şehirleri seç, saatleri ve saat farklarını kıyasla, ortak çalışma saatlerini gör. Senin saat dilimin: <b id="me"></b></p>
+
+<h2>1) Şehirleri seç</h2>
+<div class="chips" id="chips"></div>
+
+<h2>2) Saatler</h2>
+<div class="dt"><label>Tarih <input type="date" id="dt"></label><label>Saat (senin saatinle) <input type="time" id="tm"></label><button class="go" id="live">Şimdiye dön</button><span class="meta" id="tlabel">Tarih seçmezsen saatler canlı akar.</span></div>
+<div class="grid" id="grid"></div>
+
+<h2>3) Ortak çalışma saatleri (09:00–18:00)</h2>
+<div class="wrap"><table id="tbl"></table></div>
+<div class="legend"><span><i style="background:var(--work)"></i>Çalışma saati</span><span><i style="background:var(--off)"></i>Mesai dışı</span><span><i style="background:var(--all)"></i>Herkes mesaide</span></div>
+<div class="sum" id="sum"></div>
+
+<h2>4) Kıyasla: iki şehri yan yana koy</h2>
+<div class="dt"><label>Şehir A (sol)<select id="ca"></select></label><label>Şehir B (sağ)<select id="cb"></select></label><button class="go" id="swap">⇄ Yer değiştir</button></div>
+<div class="cmp" id="cmp"></div>
+<div class="sum" id="cmptxt"></div>
+<h2>5) Yapay zekâya sor</h2>
+<div class="ai">
+<select id="mode">
+<option value="meet">Ortak toplantı saati öner</option>
+<option value="culture">Şehirler arası kültürel ipuçları</option>
+<option value="now">Şu an her şehirde insanlar ne yapıyor?</option>
+</select>
+<button class="go" id="ask">Sor</button>
+</div>
+<div id="out">Sonuç burada görünecek.</div>
+</main>
+
+<script>
+var CITIES=[
+["Istanbul","İstanbul","🇹🇷","Europe/Istanbul"],["London","Londra","🇬🇧","Europe/London"],["Berlin","Berlin","🇩🇪","Europe/Berlin"],
+["Moscow","Moskova","🇷🇺","Europe/Moscow"],["Cairo","Kahire","🇪🇬","Africa/Cairo"],["Dubai","Dubai","🇦🇪","Asia/Dubai"],
+["Mumbai","Mumbai","🇮🇳","Asia/Kolkata"],["Singapore","Singapur","🇸🇬","Asia/Singapore"],["Tokyo","Tokyo","🇯🇵","Asia/Tokyo"],
+["Seoul","Seul","🇰🇷","Asia/Seoul"],["Sydney","Sidney","🇦🇺","Australia/Sydney"],["New York","New York","🇺🇸","America/New_York"],
+["Los Angeles","Los Angeles","🇺🇸","America/Los_Angeles"],["Mexico City","Mexico City","🇲🇽","America/Mexico_City"],["Sao Paulo","São Paulo","🇧🇷","America/Sao_Paulo"],["Johannesburg","Johannesburg","🇿🇦","Africa/Johannesburg"]
+];
+var myTz="Europe/Istanbul";
+try{myTz=Intl.DateTimeFormat().resolvedOptions().timeZone||myTz}catch(e){}
+var sel=["Europe/Istanbul","America/New_York","Asia/Tokyo"];
+if(sel.indexOf(myTz)<0&&CITIES.some(function(c){return c[3]===myTz})){sel[0]=myTz}
+var $=function(i){return document.getElementById(i)};
+$("me").textContent=myTz;
+
+function offMin(tz,d){
+  var p={};
+  new Intl.DateTimeFormat("en-US",{timeZone:tz,hourCycle:"h23",year:"numeric",month:"numeric",day:"numeric",hour:"numeric",minute:"numeric"}).formatToParts(d).forEach(function(x){p[x.type]=+x.value});
+  return Math.round((Date.UTC(p.year,p.month-1,p.day,p.hour,p.minute)-Math.floor(d.getTime()/60000)*60000)/60000);
+}
+function info(tz){return CITIES.filter(function(c){return c[3]===tz})[0]}
+function fmtOff(m){var s=m<0?"-":"+",a=Math.abs(m);return "UTC"+s+Math.floor(a/60)+(a%60?":"+String(a%60).padStart(2,"0"):"")}
+function fmtDiff(m){if(m===0)return "Aynı saat";var a=Math.abs(m),h=Math.floor(a/60),mm=a%60;return (h?h+" sa":"")+(h&&mm?" ":"")+(mm?mm+" dk":"")+(m>0?" ileride":" geride")}
+
+function renderChips(){
+  var box=$("chips");box.textContent="";
+  CITIES.forEach(function(c){
+    var b=document.createElement("button");b.className="chip"+(sel.indexOf(c[3])>=0?" on":"");
+    b.textContent=c[2]+" "+c[1];
+    b.onclick=function(){
+      var i=sel.indexOf(c[3]);
+      if(i>=0){if(sel.length>2)sel.splice(i,1)}else{if(sel.length<6)sel.push(c[3])}
+      renderChips();renderAll();
+    };
+    box.appendChild(b);
+  });
+}
+function renderClocks(){
+  var now=at(),base=offMin(myTz,now),g=$("grid");g.textContent="";
+  var list=sel.slice().sort(function(a,b){return offMin(a,now)-offMin(b,now)});
+  list.forEach(function(tz){
+    var c=info(tz),o=offMin(tz,now);
+    var t=new Intl.DateTimeFormat("tr-TR",{timeZone:tz,hour:"2-digit",minute:"2-digit",second:target?undefined:"2-digit",hourCycle:"h23"}).format(now);
+    var d=new Intl.DateTimeFormat("tr-TR",{timeZone:tz,weekday:"long",day:"numeric",month:"long"}).format(now);
+    var h=+new Intl.DateTimeFormat("en-US",{timeZone:tz,hour:"numeric",hourCycle:"h23"}).format(now);
+    var day=h>=6&&h<20,work=h>=9&&h<18;
+    var el=document.createElement("div");el.className="card"+(tz===myTz?" base":"");
+    var a=document.createElement("div");a.className="city";a.textContent=c[2]+" "+c[1]+(tz===myTz?" (sen)":"");
+    var b=document.createElement("div");b.className="time";b.textContent=t;
+    var m=document.createElement("div");m.className="meta";m.textContent=d+" · "+fmtOff(o);
+    var f=document.createElement("div");f.className="meta";f.textContent=tz===myTz?"Referans saat":fmtDiff(o-base);
+    var tg=document.createElement("span");tg.className="tag";tg.textContent=(day?"☀️ Gündüz":"🌙 Gece")+" · "+(work?"mesaide":"mesai dışı");
+    [a,b,m,f,tg].forEach(function(x){el.appendChild(x)});g.appendChild(el);
+  });
+}
+function renderStrip(){
+  var now=at(),base=offMin(myTz,now),tbl=$("tbl");tbl.textContent="";
+  var hr=document.createElement("tr"),e0=document.createElement("th");hr.appendChild(e0);
+  for(var h=0;h<24;h++){var th=document.createElement("th");th.textContent=String(h).padStart(2,"0");hr.appendChild(th)}
+  tbl.appendChild(hr);
+  var all=[];for(var i=0;i<24;i++)all.push(true);
+  sel.forEach(function(tz){
+    var o=offMin(tz,now),tr=document.createElement("tr"),n=document.createElement("td");n.className="n";
+    var c=info(tz);n.textContent=c[2]+" "+c[1];tr.appendChild(n);
+    for(var h=0;h<24;h++){
+      var loc=Math.floor((((h*60-base+o)%1440)+1440)%1440/60),w=loc>=9&&loc<18;
+      if(!w)all[h]=false;
+      var td=document.createElement("td");td.className="c"+(w?" w":"");td.textContent=String(loc).padStart(2,"0");tr.appendChild(td);
+    }
+    tbl.appendChild(tr);
+  });
+  var tr=document.createElement("tr"),n=document.createElement("td");n.className="n";n.textContent="⭐ Ortak";tr.appendChild(n);
+  var hours=[];
+  for(var h=0;h<24;h++){var td=document.createElement("td");td.className="c"+(all[h]?" a":"");td.textContent=all[h]?"✓":"";tr.appendChild(td);if(all[h])hours.push(h)}
+  tbl.appendChild(tr);
+  $("sum").textContent=hours.length?("Herkesin mesaide olduğu saatler (senin saatinle): "+hours.map(function(h){return String(h).padStart(2,"0")+":00"}).join(", ")+"."):"Seçtiğin şehirlerin hepsinin aynı anda mesaide olduğu bir saat yok. Yapay zekâya sorarak en az kötü saati bulabilirsin.";
+  window.__common=hours;
+}
+var target=null;
+function at(){return target||new Date()}
+function setTarget(){
+  var dv=$("dt").value,tv=$("tm").value||"12:00";
+  if(!dv){target=null;$("tlabel").textContent="Tarih seçmezsen saatler canlı akar."}
+  else{
+    var p=dv.split("-"),q=tv.split(":"),g=Date.UTC(+p[0],p[1]-1,+p[2],+q[0],+q[1]);
+    var t=g-offMin(myTz,new Date(g))*60000;t=g-offMin(myTz,new Date(t))*60000;target=new Date(t);
+    $("tlabel").textContent="Seçilen an: "+new Intl.DateTimeFormat("tr-TR",{timeZone:myTz,dateStyle:"full",timeStyle:"short"}).format(target)+" (yaz saati farkları dahil)";
+  }
+  renderAll();
+}
+function renderAll(){renderClocks();renderStrip();renderCompare()}
+function pad(n){return String(n).padStart(2,'0')}
+function add(p,c,t){var e=document.createElement('div');e.className=c;e.textContent=t;p.appendChild(e);return e}
+function loc(tz,now){var p={};new Intl.DateTimeFormat('en-US',{timeZone:tz,hourCycle:'h23',year:'numeric',month:'numeric',day:'numeric',hour:'numeric',minute:'numeric',weekday:'short'}).formatToParts(now).forEach(function(x){p[x.type]=x.value});return {h:+p.hour,m:+p.minute,wd:p.weekday,day:Date.UTC(+p.year,p.month-1,+p.day)/86400000,off:offMin(tz,now)}}
+function wk(tz,wd){return tz==='Africa/Cairo'?(wd==='Fri'||wd==='Sat'):(wd==='Sat'||wd==='Sun')}
+function isWork(tz,L){return !wk(tz,L.wd)&&L.h>=9&&L.h<18}
+function part(h){return h<6?'Gece':h<12?'Sabah':h<18?'Öğleden sonra':h<22?'Akşam':'Gece'}
+function dstInfo(tz,now){var y=now.getUTCFullYear(),j=offMin(tz,new Date(Date.UTC(y,0,15))),l=offMin(tz,new Date(Date.UTC(y,6,15))),o=offMin(tz,now);return {has:j!==l,on:j!==l&&o>Math.min(j,l)}}
+function dstTxt(tz,now){var d=dstInfo(tz,now);return !d.has?'Uygulanmıyor':d.on?'Uygulanıyor (şu an yaz saatinde)':'Uygulanıyor (şu an kış saatinde)'}
+function dstr(tz,now){return new Intl.DateTimeFormat('tr-TR',{timeZone:tz,weekday:'long',day:'numeric',month:'long'}).format(now)}
+function hm(min){min=((min%1440)+1440)%1440;return pad(Math.floor(min/60))+':'+pad(min%60)}
+function renderCompare(){
+  var sa=$('ca'),sb=$('cb');
+  if(!sa.options.length){
+    CITIES.forEach(function(c){[sa,sb].forEach(function(s){var o=document.createElement('option');o.value=c[3];o.textContent=c[2]+' '+c[1];s.appendChild(o)})});
+    sa.value=myTz;sb.value=sel.filter(function(t){return t!==myTz})[0]||'America/New_York';
+    sa.onchange=renderCompare;sb.onchange=renderCompare;
+    $('swap').onclick=function(){var t=sa.value;sa.value=sb.value;sb.value=t;renderCompare()};
+  }
+  var now=at(),A=sa.value,B=sb.value,box=$('cmp');box.textContent='';
+  var La=loc(A,now),Lb=loc(B,now),ca=info(A),cb=info(B),na=ca[1],nb=cb[1];
+  [[A,La,ca,'a'],[B,Lb,cb,'b']].forEach(function(z){
+    var tz=z[0],L=z[1],c=z[2],card=document.createElement('div');card.className='card side'+z[3];
+    add(card,'city',c[2]+' '+c[1]+(z[3]==='a'?' (A)':' (B)'));
+    add(card,'time big',pad(L.h)+':'+pad(L.m));
+    [['Tarih',dstr(tz,now)],['UTC farkı',fmtOff(L.off)],['Günün vakti',part(L.h)],['Mesai durumu',isWork(tz,L)?'Mesaide':(wk(tz,L.wd)?'Mesai dışı (hafta sonu)':'Mesai dışı')],['Hafta sonu mu?',wk(tz,L.wd)?'Evet':'Hayır, hafta içi'],['Yaz saati',dstTxt(tz,now)]].forEach(function(r){add(card,'k',r[0]);add(card,'v',r[1])});
+    box.appendChild(card);
+  });
+  var S=[],d=Lb.off-La.off,out=$('cmptxt');out.textContent='';
+  if(A===B){S.push('Aynı şehri seçtin. Kıyaslamak için B için farklı bir şehir seç.')}
+  else{
+    S.push(d===0?na+' ve '+nb+' aynı saat diliminde, saatler aynı.':nb+' şehri '+na+' şehrinden '+fmtDiff(d)+'. '+na+' saatiyle 12:00 olduğunda '+nb+' saatiyle '+hm(720+d)+' olur.');
+    var dd=Lb.day-La.day;
+    if(dd===0)S.push('İkisinde de takvim günü aynı: '+dstr(A,now)+'.');
+    else S.push((dd>0?nb:na)+' tarafında takvim bir gün ileride: '+na+' '+dstr(A,now)+', '+nb+' '+dstr(B,now)+'.');
+    var wa=isWork(A,La),wb=isWork(B,Lb);
+    S.push(wa&&wb?'İkisi de şu an mesaide, hemen görüşebilirsiniz.':wa?na+' şu an mesaide, '+nb+' mesai dışı.':wb?nb+' şu an mesaide, '+na+' mesai dışı.':'İkisi de şu an mesai dışı.');
+    var ov=[];for(var h=0;h<24;h++){var hb=Math.floor((((h*60+d)%1440)+1440)%1440/60);if(h>=9&&h<18&&hb>=9&&hb<18)ov.push(h)}
+    if(!ov.length)S.push('Ortak mesai saati yok: 09:00–18:00 mesaileri hiçbir saatte çakışmıyor. Biri erken kalkıp diğeri geç yatarak görüşebilir.');
+    else{var f=ov[0],n=ov.length;S.push('Ortak mesai: '+na+' saatiyle '+hm(f*60)+'–'+hm((f+n)*60)+' = '+nb+' saatiyle '+hm(f*60+d)+'–'+hm((f+n)*60+d)+' ('+n+' saat).')}
+    S.push('Günün vakti: '+na+' için '+part(La.h).toLowerCase()+', '+nb+' için '+part(Lb.h).toLowerCase()+'.');
+    var sl=function(h){return h<7||h>=23};
+    if(sl(La.h)!==sl(Lb.h))S.push((sl(La.h)?na:nb)+' tarafında insanlar büyük olasılıkla uyuyor, şu an aramak pek nazik olmaz.');
+    var ia=dstInfo(A,now),ib=dstInfo(B,now);
+    if(ia.has||ib.has)S.push('Yaz saati: '+na+' için '+dstTxt(A,now).toLowerCase()+'; '+nb+' için '+dstTxt(B,now).toLowerCase()+'. Bu yüzden aradaki fark yılın bazı haftalarında 1 saat değişebilir.');
+    else S.push('İkisi de yaz saati uygulamıyor, aradaki fark tüm yıl sabit.');
+    var xa=wk(A,La.wd),xb=wk(B,Lb.wd);
+    if(xa||xb)S.push(xa&&xb?'İkisinde de şu an hafta sonu.':(xa?na:nb)+' tarafında şu an hafta sonu, '+(xa?nb:na)+' tarafında hafta içi.');
+  }
+  var ul=document.createElement('ul');
+  S.forEach(function(s){var li=document.createElement('li');li.textContent=s;ul.appendChild(li)});
+  var hd=document.createElement('b');hd.textContent='Yazılı kıyaslama';out.appendChild(hd);out.appendChild(ul);
+}
+$("dt").onchange=setTarget;$("tm").onchange=setTarget;
+$("live").onclick=function(){$("dt").value="";target=null;setTarget()};
+(function(){var n=new Date();$("tm").value=new Intl.DateTimeFormat("en-GB",{timeZone:myTz,hour:"2-digit",minute:"2-digit",hourCycle:"h23"}).format(n);$("dt").min=new Intl.DateTimeFormat("en-CA",{timeZone:myTz}).format(n)})();
+renderChips();renderAll();
+setInterval(renderClocks,1000);setInterval(renderStrip,60000);
+
+var PROMPTS={
+ meet:"Bu şehirler arasında bir online toplantı için en adil saati öner ve nedenini açıkla. Kimin için zor olduğunu da belirt.",
+ culture:"Bu şehirlerin saat dilimi ve çalışma kültürü farklarını (mesai saatleri, hafta sonu günleri, öğle arası, yaz saati uygulaması gibi) kısa ve pratik şekilde anlat.",
+ now:"Şu anki yerel saatlere bakarak her şehirde insanların büyük olasılıkla ne yaptığını eğlenceli, tek cümleyle tahmin et."
+};
+$("ask").onclick=async function(){
+  var btn=$("ask"),out=$("out"),now=at();
+  var lines=sel.map(function(tz){var c=info(tz);return c[1]+" ("+tz+"): "+new Intl.DateTimeFormat("tr-TR",{timeZone:tz,weekday:"long",hour:"2-digit",minute:"2-digit",hourCycle:"h23"}).format(now)+", "+fmtOff(offMin(tz,now))}).join("\n");
+  var prompt="Sen kısa ve net konuşan bir zaman dilimi asistanısın. Türkçe cevap ver, 150 kelimeyi geçme, markdown kullanma.\nKullanıcının saat dilimi: "+myTz+"\n"+(target?"Şehirler ve seçilen tarihteki yerel saatler (yaz saati uygulaması dahil):":"Şehirler ve şu anki yerel saatler:")+"\n"+lines+"\nGörev: "+PROMPTS[$("mode").value];
+  btn.disabled=true;out.textContent="Düşünüyor...";
+  try{
+    var sample=await claude.use("sample");
+    if(!sample){out.textContent="Yapay zekâ bu görünümde kullanılamıyor.";btn.disabled=false;return}
+    var r=await sample(prompt,{cache:false,onText:function(x){out.textContent=x.text}});
+    out.textContent=r.text;
+  }catch(e){
+    out.textContent=(e&&e.code==="not_granted")?"Yapay zekâ izni verilmedi.":"Bir hata oluştu, biraz sonra tekrar dene.";
+  }
+  btn.disabled=false;
+};
+</script>
+</body>
+</html>
